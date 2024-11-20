@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Mahasiswa</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="attendance-container">
+        <h1>Attendance Mahasiswa</h1>
+        <form action="/api/attendance" method="POST" enctype="multipart/form-data">
+            <label for="file">Unggah Gambar Wajah:</label>
+            <input type="file" id="file" name="file" accept="image/*" required>
+            <button type="submit">Lakukan Attendance</button>
+        </form>
+    </div>
+</body>
+</html>

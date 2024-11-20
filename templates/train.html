@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Training Model</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center;">Training Model</h1>
+        <form method="POST" action="/train" style="text-align: center; margin-top: 20px;">
+            <button type="submit" style="padding: 10px 20px; font-size: 16px; background-color: green; color: white; border: none; border-radius: 5px;">Mulai Training</button>
+        </form>
+
+        {% if message %}
+            <p style="color: green; text-align: center; margin-top: 20px;">{{ message }}</p>
+        {% endif %}
+    </div>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tambah Dataset Mahasiswa</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+    <script>
+        let captureCount = 0; // Menghitung jumlah gambar yang diambil
+        let stream = null; // Untuk menyimpan stream video
+    
+        function startCamera() {
+            const video = document.getElementById('video');
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function (cameraStream) {
+                    stream = cameraStream; // Simpan stream untuk digunakan nanti
+                    video.srcObject = stream;
+                    video.play();
+                })
+                .catch(function (err) {
+                    console.error("Error accessing camera: ", err);
+                });
+        }
+    
+        function stopCamera() {
+            if (stream) {
+                console.log("Mematikan kamera...");
+                stream.getTracks().forEach(track => track.stop());
+                stream = null; // Hapus referensi stream
+            }
+        }
+    
+        function captureImages() {
+            const video = document.getElementById('video');
+            const canvas = document.createElement('canvas');
+            const statusText = document.getElementById('status-text');
+            const returnButton = document.getElementById('return-button');
+            canvas.width = 640; // Resolusi lebih kecil
+            canvas.height = 480;
+            const ctx = canvas.getContext('2d');
+    
+            statusText.innerText = "Sedang mengambil dataset, harap tunggu...";
+            returnButton.style.display = "none"; // Sembunyikan tombol kembali saat proses berjalan
+    
+            function captureAndSendImage() {
+                if (captureCount >= 10) {
+                    alert("Pengambilan 10 gambar selesai.");
+                    statusText.innerText = "Proses selesai. Anda akan diarahkan ke dashboard.";
+                    stopCamera(); // Pastikan kamera mati
+                    setTimeout(() => {
+                        window.location.href = '/dashboard'; // Alihkan ke dashboard
+                    }, 1500); // Jeda sebelum mengarahkan
+                    return;
+                }
+    
+                ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                const imageData = canvas.toDataURL('image/jpeg', 0.5); // Kompres gambar untuk mempercepat upload
+    
+                const formData = new FormData();
+                formData.append('image', imageData);
+                formData.append('name', document.getElementById('name').value);
+                formData.append('nim', document.getElementById('nim').value);
+                formData.append('student_id', document.getElementById('student_id').value);
+    
+                fetch('/dataset', {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            console.log(`Gambar ke-${captureCount + 1} berhasil dikirim.`);
+                            captureCount++;
+                            if (captureCount < 10) {
+                                setTimeout(captureAndSendImage, 500); // Jeda 0,5 detik
+                            }
+                        } else {
+                            console.error(`Gagal mengirim gambar ke-${captureCount + 1}: ${data.message}`);
+                            alert("Terjadi kesalahan saat mengirim gambar.");
+                            stopCamera(); // Pastikan kamera mati jika gagal
+                            statusText.innerText = "Gagal mengambil dataset. Coba lagi.";
+                            returnButton.style.display = "block";
+                        }
+                    })
+                    .catch(err => {
+                        console.error(`Gagal mengirim gambar ke-${captureCount + 1}:`, err);
+                        alert("Terjadi kesalahan jaringan.");
+                        stopCamera(); // Pastikan kamera mati jika terjadi kesalahan jaringan
+                        statusText.innerText = "Gagal mengambil dataset. Coba lagi.";
+                        returnButton.style.display = "block";
+                    });
+            }
+    
+            captureAndSendImage();
+        }
+    
+        function generateStudentID() {
+            const studentID = 'ID-' + Date.now();
+            document.getElementById('student_id').value = studentID;
+        }
+    </script>
+    
+</head>
+
+<body onload="startCamera(); generateStudentID();">
+    <div class="container">
+        <h1>Tambah Dataset Mahasiswa</h1>
+        <form id="dataset-form">
+            <label for="name">Nama Mahasiswa:</label>
+            <input type="text" id="name" name="name" placeholder="Masukkan nama" required>
+
+            <label for="nim">NIM:</label>
+            <input type="text" id="nim" name="nim" placeholder="Masukkan NIM" required>
+
+            <label for="student_id">ID Mahasiswa:</label>
+            <input type="text" id="student_id" name="student_id" disabled>
+
+            <!-- Kamera -->
+            <div id="camera-container">
+                <video id="video" width="320" height="240" autoplay></video>
+                <button type="button" onclick="captureImages()">Mulai Pengambilan Gambar</button>
+            </div>
+
+            <!-- Status -->
+            <p id="status-text" style="font-weight: bold; color: #555;"></p>
+
+            <!-- Tombol Kembali -->
+            <button id="return-button" style="display: none;" onclick="window.location.href='/dashboard';">Kembali ke Dashboard</button>
+
+            <!-- Input untuk menyimpan gambar base64 -->
+            <input type="hidden" id="image" name="image">
+        </form>
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        /* Gaya umum */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9fb;
+            color: #333;
+        }
+
+        .dashboard {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4CAF50;
+            margin-bottom: 20px;
+            font-size: 2rem;
+        }
+
+        /* Navigasi */
+        nav ul {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        nav ul li {
+            display: inline;
+        }
+
+        nav ul li a {
+            text-decoration: none;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 25px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        nav ul li a.logout {
+            background-color: #ff5722;
+        }
+
+        nav ul li a.logout:hover {
+            background-color: #e64a19;
+        }
+
+        nav ul li a:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+
+        /* Tabel */
+        table {
+            width: 90%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        table thead {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        table th, table td {
+            text-align: left;
+            padding: 12px 20px;
+        }
+
+        table th {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        table tbody tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        table tbody tr:hover {
+            background-color: #eaf5ea;
+        }
+
+        table tbody tr td {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* Header tabel */
+        h2 {
+            text-align: center;
+            color: #4CAF50;
+            margin-top: 30px;
+            font-size: 1.5rem;
+        }
+
+        /* Responsif */
+        @media (max-width: 768px) {
+            table {
+                width: 100%;
+            }
+
+            nav ul {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            nav ul li a {
+                padding: 10px 15px;
+                font-size: 14px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            h2 {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+    <script>
+        function loadStudents() {
+            fetch('/students')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        const tableBody = document.getElementById('students-table-body');
+                        tableBody.innerHTML = ''; // Kosongkan tabel sebelumnya
+
+                        data.data.forEach(student => {
+                            const row = `
+                                <tr>
+                                    <td>${student.id}</td>
+                                    <td>${student.name}</td>
+                                    <td>${student.nim}</td>
+                                    <td>${student.images}</td>
+                                </tr>`;
+                            tableBody.innerHTML += row;
+                        });
+                    } else {
+                        console.error("Gagal memuat data mahasiswa:", data.message);
+                        document.getElementById('students-table-body').innerHTML =
+                            '<tr><td colspan="4" style="text-align: center;">Gagal memuat data mahasiswa.</td></tr>';
+                    }
+                })
+                .catch(err => {
+                    console.error("Error saat memuat data mahasiswa:", err.message);
+                    document.getElementById('students-table-body').innerHTML =
+                        '<tr><td colspan="4" style="text-align: center;">Terjadi kesalahan jaringan.</td></tr>';
+                });
+        }
+
+        window.onload = loadStudents;
+    </script>
+</head>
+<body>
+    <div class="dashboard">
+        <h1>Welcome, Admin!</h1>
+        <nav>
+            <ul>
+                <li><a href="/dataset">Tambah Dataset</a></li>
+                <li><a href="/train">Training Model</a></li>
+                <li><a href="/attendance">Mahasiswa Attendance</a></li>
+                <li><a href="/logout" class="logout">Logout</a></li> <!-- Tombol Logout -->
+            </ul>
+        </nav>
+
+        <!-- Tabel Daftar Mahasiswa -->
+        <h2>Daftar Mahasiswa</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID Mahasiswa</th>
+                    <th>Nama</th>
+                    <th>NIM</th>
+                    <th>Jumlah Gambar</th>
+                </tr>
+            </thead>
+            <tbody id="students-table-body">
+                <tr>
+                    <td colspan="4" style="text-align: center;">Memuat data...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
